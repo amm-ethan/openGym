@@ -12,7 +12,13 @@ WORKDIR /app
 COPY frontend/package.json frontend/package-lock.json* ./
 RUN npm ci 2>/dev/null || npm install
 COPY frontend/ ./
-RUN npm run build
+# Empty = serve img/ and gif/ next to the app, from the `media` volume (the default compose
+# setup). Set both to point at a CDN instead (see `npm run build:mobile` for the pinned jsdelivr
+# URLs this repo already uses for the mobile build) on any host that can't mount that shared
+# volume into this image — e.g. Railway, where services don't share volumes with each other.
+ARG VITE_IMG_BASE=""
+ARG VITE_GIF_BASE=""
+RUN VITE_IMG_BASE="$VITE_IMG_BASE" VITE_GIF_BASE="$VITE_GIF_BASE" npm run build
 
 FROM nginx:alpine
 ARG VERSION=dev
@@ -32,7 +38,12 @@ LABEL maintainer="Duarte Santos https://gitlab.com/DuarteSantos8" \
 
 COPY web/nginx.conf.template /etc/nginx/templates/default.conf.template
 COPY --from=build /app/dist /usr/share/nginx/html
-# exercise media (img/gif) is mounted at runtime from the media volume
+# exercise media (img/gif) is mounted at runtime from the media volume — either the
+# docker-compose `media` service's bind mount, or fetch-exercise-media.sh below on a host
+# that can't share that volume across services (see that script for why).
+COPY web/fetch-exercise-media.sh /docker-entrypoint.d/25-fetch-exercise-media.sh
+RUN apk add --no-cache git \
+    && chmod +x /docker-entrypoint.d/25-fetch-exercise-media.sh
 
 # Set Default ENVs for nginx
 ENV NGINX_PORT=80
