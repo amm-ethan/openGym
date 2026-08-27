@@ -49,6 +49,10 @@ RUN apk add --no-cache git \
 ENV NGINX_PORT=80
 ENV BACKEND=api
 ENV PORT=3000
+# Turns on the base image's own /docker-entrypoint.d/15-local-resolvers.envsh, which exports
+# NGINX_LOCAL_RESOLVERS (read from /etc/resolv.conf) for the `resolver` directive above — off by
+# default upstream because most templates don't need it; ours does, unconditionally.
+ENV NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1
 # Empty = the CF-Connecting-IP header is dropped before it reaches the API, so it cannot be
 # forged by a direct client. Set to $http_cf_connecting_ip only when Cloudflare is really in
 # front. Defined here too, not just in compose, so the template always renders for anyone
