@@ -51,6 +51,11 @@ cd frontend && npm run build:mobile   # + cap sync, points media at the CDN data
 There is no linter/formatter configured (no ESLint/Prettier config in the repo) and no
 TypeScript — match the existing style by hand.
 
+`PROJECT_CONTEXT.md` documents the drop-set / rest-pause set-shape work (the `type` discriminator
+on set rows in `workout-model.js`, `applyIntensifierPlan`, and the deliberate open issues it left
+in the progression/1RM engines) in more depth than fits here — read it before touching set rows,
+`sheets.jsx`'s `ExConfig`, or how a session sums back into `history.js`/`recovery.js`.
+
 The CI gate is `.gitlab-ci.yml` on GitLab, the canonical remote (see README): it runs the
 `frontend/` tests on Node 22 — the same version as `web/Dockerfile` / `api/Dockerfile`
 (`node:22-alpine`) — and additionally builds and publishes the Docker images, packages the
